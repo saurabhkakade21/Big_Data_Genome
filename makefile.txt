@@ -1,6 +1,0 @@
-FASTAread : FASTAread.o
-        g++ -o FASTAread FASTAread.o
-FASTAread.o : FASTAread.cpp fastaread.h
-        g++ -c FASTAread.cpp
-clean:
-        rm FASTAread FASTAread.o
