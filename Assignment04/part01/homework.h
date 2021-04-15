@@ -293,15 +293,16 @@ class FASTAreadset_DA
 					
 					
 				
+					cout << "\n***********************************************************************************************************************\n" <<endl;
 					
 					seqB = temp_genome -> dataStructure_LL_genome;
 					
 					
 					temp_genome = temp_genome -> next;
-
-					// cout << seqA << endl;
 					
-					// cout << seqB << endl;
+					cout<<"Sequence 01 and sequence 02: \n"<<endl;
+					cout << seqA << endl;
+					cout << seqB << endl;
 				
 					
 			
@@ -358,6 +359,9 @@ class FASTAreadset_DA
 							}
 						}
 					}
+					cout<<endl;
+					// cout << "***********************************************************************************************************************\n" <<endl;
+					cout << "Print the scoring matrix to console: \n" << endl;
 
 					// print the scoring matrix to console
 					for(int i=1;i<lengthSeqA;i++)
@@ -388,7 +392,7 @@ class FASTAreadset_DA
 
 					// cout << j_max << endl;
 
-					cout << "Max score in the matrix is " << matrix_max << endl;
+					cout << "\nMax score in the matrix is: " << matrix_max << endl;
 
 					// traceback
 					
@@ -434,10 +438,13 @@ class FASTAreadset_DA
 					}
 
 					//print the consensus sequences
-					cout<<endl<<" "<<endl;
-					cout<<"Alignment:"<<endl<<endl;
-					for(int i=0;i<lengthSeqA;i++){cout<<seqA[i];}; cout<<"  and"<<endl;
-					for(int i=0;i<lengthSeqB;i++){cout<<seqB[i];}; cout<<endl<<endl;  
+					// cout<<endl<<" "<<endl;
+					cout<<"\nAlignment of sequence 01 and sequence 02: (Traceback)\n"<<endl;
+
+					// for(int i=0;i<lengthSeqA;i++){cout<<seqA[i];}; cout<<"  and"<<endl;
+					// for(int i=0;i<lengthSeqB;i++){cout<<seqB[i];}; cout<<endl<<endl;  
+
+					// cout << "Trace back:  \n"<<endl;
 					for(int i=tick-1;i>=0;i--) cout<<consensus_a[i]; 
 					cout<<endl;
 
@@ -465,6 +472,8 @@ class FASTAreadset_DA
 
 					for(int j=tick-1;j>=0;j--) cout<<consensus_b[j];
 					cout<<endl;
+					cout << "\n***********************************************************************************************************************" <<endl;
+					
 				}
 				temp_read = temp_read -> next;
 			}
