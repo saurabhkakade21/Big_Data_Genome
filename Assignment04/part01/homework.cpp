@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 
 	FASTAreadset_DA fasta(argv[2]);	// calling class from homework.h to solve part 01
 
-	int user_sizeofhashtable = 10000000;	//size of hash table 
+	int user_defined_values = 100;	//size of random read sequence 
 
 
 	switch(*second_argument)
@@ -49,7 +49,7 @@ int main(int argc, char ** argv){
 		
 		//Part 01
 		case 'A': 
-			cout << "\nRead in the read data set into your data structure: \n" << endl;
+			cout << "\nFunction in C++ that implements the Smith-Waterman alignment between two genomic sequences.: \n" << endl;
 			fasta.read_reads();
 			// fasta.display_reads();
 			fasta.read_genomic_data(argv[3]);
@@ -58,12 +58,11 @@ int main(int argc, char ** argv){
 			break;
 
 		case 'B': 
-			cout << "\nSearch time in direct access arrays: \n" << endl;
-			// fasta.read_reads();
-			// fasta.radix_notation();
+			cout << "\nGenerate 1K, 10K, 100K, and 1M (million) completely random genomic sequences (50nt) to use as targets for alignment and use SARS-COV2 genome as subject. Perform alignment of the queries to the subject sequence and record time to completion (in seconds / minutes).: \n" << endl;
+			fasta.random_seq_generator(user_defined_values);
+			fasta.display_reads();
 			// fasta.read_genomic_data(argv[3]);
-			// fasta.search_genomic_data();
-			// fasta.print_genomic_data();
+			// fasta.SW_algorithm();
 			break;
 
 		//Part 02
