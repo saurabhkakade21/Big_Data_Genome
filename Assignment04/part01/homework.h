@@ -11,6 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
+#include <ctime>
+#include <cstdlib>
 
 using namespace std;
      
@@ -34,18 +37,18 @@ class FASTAreadset_DA
 		char ** header_array; //an aray used for temp purpose
 		char ** data_array; //an aray used for temp purpose
 		char ** data_array_genome;
+		char ** data_random_seq;
+		
 		unsigned int total,value,hashtablesize,collisions = 0;
 		int num_of_reads; //to read the number of reads from user
         string file_path; // to store file name
         ifstream input; //used for file operations
 		Node* head; // to create new node head
 		Node* data_head; // to create new node for temporary purpose
-		bool bool_array[20000];
 		int ind; 
 		double penalty=-3;
 		double match = 2;
 		double mismatch = -1;
-
 
     public:
         
@@ -243,6 +246,59 @@ class FASTAreadset_DA
 			}
 		}
 
+		void random_seq_generator(int user_defined_values)
+		{
+			
+			Node * current_ll = new Node;
+			
+			srand(time(0));
+
+			for (int i = 0; i < user_defined_values; i++)
+			{
+				Node * new_node = new Node;
+				
+				for (int j = 0; j < 50; j++)
+				{
+					int result = ( rand() % 4 );
+
+					if(result==0)
+					{
+						new_node->dataStructure_LL[j] = 'A';
+
+					}
+					else if(result==1)
+					{
+						new_node->dataStructure_LL[j] = 'C';
+					}
+					else if(result==2)
+					{
+						new_node->dataStructure_LL[j] = 'G';
+					}
+					else if(result==3)
+					{
+						new_node->dataStructure_LL[j] = 'T';
+					}
+
+				}
+
+				new_node->next = NULL;
+
+				if(current_ll != NULL)
+				{
+					current_ll->next = new_node;
+				}
+
+				current_ll = new_node;
+
+				if(i == 0)
+				{
+					head = new_node;
+				}
+
+			}
+							
+		}
+
 		double similarityScore(char a, char b)
 		{
 			double result;
@@ -288,25 +344,16 @@ class FASTAreadset_DA
 
 				while(temp_genome != NULL)
 				{
-					// cout << temp_read -> dataStructure_LL << "\n";
-					// cout << temp_genome -> dataStructure_LL_genome << "\n";
-					
-					
 				
 					cout << "\n***********************************************************************************************************************\n" <<endl;
 					
 					seqB = temp_genome -> dataStructure_LL_genome;
-					
 					
 					temp_genome = temp_genome -> next;
 					
 					cout<<"Sequence 01 and sequence 02: \n"<<endl;
 					cout << seqA << endl;
 					cout << seqB << endl;
-				
-					
-			
-
 			
 					// initialize some variables
 					int lengthSeqA = seqA.length();
@@ -339,7 +386,7 @@ class FASTAreadset_DA
 							traceback[3] = 0;
 							matrix[i][j] = findMax(traceback,4);
 							switch(ind)
-							{
+							{							///chnage into if conditions***************&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 								case 0:
 									I_i[i][j] = i-1;
 									I_j[i][j] = j-1;
@@ -388,9 +435,6 @@ class FASTAreadset_DA
 							}
 						}
 					}
-					// cout << i_max << endl;
-
-					// cout << j_max << endl;
 
 					cout << "\nMax score in the matrix is: " << matrix_max << endl;
 
@@ -401,11 +445,8 @@ class FASTAreadset_DA
 					int next_i=I_i[current_i][current_j];
 					int next_j=I_j[current_i][current_j];
 
-					// cout << next_i << endl;
-					// cout << next_j << endl;
-					
 					int tick=0;
-					// string data[lengthSeqA];
+
 					char consensus_a[lengthSeqA+lengthSeqB+2],consensus_b[lengthSeqA+lengthSeqB+2];
 
 					while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0))
@@ -437,14 +478,8 @@ class FASTAreadset_DA
 						tick++;
 					}
 
-					//print the consensus sequences
-					// cout<<endl<<" "<<endl;
 					cout<<"\nAlignment of sequence 01 and sequence 02: (Traceback)\n"<<endl;
 
-					// for(int i=0;i<lengthSeqA;i++){cout<<seqA[i];}; cout<<"  and"<<endl;
-					// for(int i=0;i<lengthSeqB;i++){cout<<seqB[i];}; cout<<endl<<endl;  
-
-					// cout << "Trace back:  \n"<<endl;
 					for(int i=tick-1;i>=0;i--) cout<<consensus_a[i]; 
 					cout<<endl;
 
@@ -481,7 +516,6 @@ class FASTAreadset_DA
 
 		}
 		
-
         void delete_data_structure() // function to print deconstructor inilialisation 
         {
             cout << "\nDeconstructor Function executed !!!\n" << endl;
