@@ -8,9 +8,11 @@
 #include <fstream>
 #include <string.h>
 #include "homework.h"
+#include <time.h>
 
 using namespace std;
 
+int user_defined_values = 1;	//size of random read sequence 
 	
 int main(int argc, char ** argv){ 
 
@@ -41,7 +43,10 @@ int main(int argc, char ** argv){
 
 	FASTAreadset_DA fasta(argv[2]);	// calling class from homework.h to solve part 01
 
-	int user_defined_values = 100;	//size of random read sequence 
+	
+	time_t begin, end;
+
+	time(&begin);
 
 
 	switch(*second_argument)
@@ -59,10 +64,12 @@ int main(int argc, char ** argv){
 
 		case 'B': 
 			cout << "\nGenerate 1K, 10K, 100K, and 1M (million) completely random genomic sequences (50nt) to use as targets for alignment and use SARS-COV2 genome as subject. Perform alignment of the queries to the subject sequence and record time to completion (in seconds / minutes).: \n" << endl;
+			
 			fasta.random_seq_generator(user_defined_values);
-			fasta.display_reads();
-			// fasta.read_genomic_data(argv[3]);
-			// fasta.SW_algorithm();
+			// fasta.display_reads();
+			fasta.read_genomic_data(argv[3]);
+			fasta.SW_algorithm();
+			
 			break;
 
 		//Part 02
@@ -89,6 +96,9 @@ int main(int argc, char ** argv){
 			cout << "Enter second argument from A to D !!!" << endl;
 			break;
 	}
+	time(&end);
+    time_t elapsed = end - begin;
+	printf("Time measured: %ld minutes.\n", elapsed/60);
 	
 	return (0);
 }
