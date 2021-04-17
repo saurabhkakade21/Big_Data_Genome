@@ -24,8 +24,7 @@ struct Node
     char dataStructure_LL[50];	//to store data
     char headercounter_LL[50];	//to store read head
 	char dataStructure_LL_genome[70];	//to store genome data
-	char headercounter_LL_genome[50];	//to store read head
-    
+	char headercounter_LL_genome[50];	//to store genome head
 	struct Node *next;
 };
 
@@ -36,17 +35,19 @@ class FASTAreadset_DA
 		
 		char ** header_array; //an aray used for temp purpose
 		char ** data_array; //an aray used for temp purpose
-		char ** data_array_genome;
-		char ** data_random_seq;
+		char ** data_array_genome;// an array used to genome sequences
+		char ** data_random_seq; // an array used to store random genomic squeries
+		char ** queries_stack; // 
 		
-		unsigned int total,value,hashtablesize,collisions = 0;
+		unsigned int total,value,hashtablesize,collisions = 0; //common variables
 		int num_of_reads; //to read the number of reads from user
         string file_path; // to store file name
         ifstream input; //used for file operations
 		Node* head; // to create new node head
 		Node* data_head; // to create new node for temporary purpose
-		int ind; 
-		double penalty=-3;
+
+		int index; //to store max value of Dij matrix
+		double GAP_penalty=-3;
 		double match = 2;
 		double mismatch = -1;
 
@@ -71,10 +72,9 @@ class FASTAreadset_DA
 			input.open(file_path.c_str()); 
 			head = NULL;
 			data_head = NULL;
-
         }
 		
-		int size_of_table(string file_path) //to count the size of the read dataset file
+		int size_of_table(string file_path) //to count the size of the read queries file
 		{
 			string input_line;
 			int counter1 = 0;
@@ -89,36 +89,20 @@ class FASTAreadset_DA
 			return counter1;
 		}
 
-        void read_reads() // function to read number of reads from file	
+        void read_queries() // function to read number of reads from file	
         {
 			
 			int counter = size_of_table(file_path);
-			
-			cout << "Number Of Lines (reads): " << counter << endl;
+			cout << "Number Of Read Query Lines (reads): " << counter << endl;
 
-			data_array = new char*[counter];
-			header_array = new char*[counter];
-			
-						
-			for(int i=0; i<counter/2; i++)
-			{
-				data_array[i] = new char[50];
-				header_array[i] = new char[50];
-			}
-
-			
 			Node * current_ll = new Node;	//temporary node
-
-			char temp_input[50];	
-
+			
 			for(int i=0; i<counter/2; i++)
 			{
 				Node * new_node = new Node;
 
 				input >> new_node->headercounter_LL;		//read read sequence		
 				input >> new_node->dataStructure_LL;		//read data sequence
-
-				data_array[i] = new_node->dataStructure_LL;
 
 				new_node->next = NULL;
 
@@ -139,7 +123,7 @@ class FASTAreadset_DA
 			input.close(); //closing the file
         }
 
-		void display_reads() // display function to print linked list
+		void display_read_queries() // display function to print linked list
 		{
 			Node* temp; //pointer to traverse the linked list
 			temp = head;
@@ -148,16 +132,23 @@ class FASTAreadset_DA
 				cout << temp -> dataStructure_LL << "\n";
 				temp = temp -> next;
 			}
-			
+		}
 
-
-
+		void display_random_queries() // display function to print linked list
+		{
+			cout << "\nRandom genomic sequences: \n" << endl;
+			display_read_queries();
 		}
 
 	   	void read_genomic_data(string filepath2)	//Read in the Bacillus anthracis genome
 		{
 			string input2_line2;
 			ifstream input2;
+			char temp[70]; // to store 70 characters in a temp folder
+			char genome_character = '\0';
+			int count = 0;
+			int num_of_records = 0;
+			Node* current;
 
             if(input2.is_open()) //check whether file is open already
 			{
@@ -165,15 +156,6 @@ class FASTAreadset_DA
 			}
 
 			input2.open(filepath2.c_str()); // initialize thE file
-
-			char temp[70]; // to store 50 characters in a temp forlder
-
-			char genome_character = '\0';
-
-			int count = 0;
-			int num_of_records = 0;
-
-			Node* current;
 			
 			while(genome_character != '\n')
 			{
@@ -230,12 +212,13 @@ class FASTAreadset_DA
 				}  
 			}         
 
-			cout << "Total 70-character fragments: " << num_of_records << endl;
+			cout << "\nTotal 70-character fragments: " << num_of_records << endl;
 			input2.close();
 		}
 	   
 		void print_genomic_data() //print the genome data linked list
 		{
+			cout<< "\n The genomic sequences are: " <<endl;
 
 			Node* current = data_head;
 
@@ -246,7 +229,7 @@ class FASTAreadset_DA
 			}
 		}
 
-		void random_seq_generator(int user_defined_values)
+		void random_seq_generator(int user_defined_values) // random sequence generator as per the user size of total queries.
 		{
 			
 			Node * current_ll = new Node;
@@ -264,7 +247,6 @@ class FASTAreadset_DA
 					if(result==0)
 					{
 						new_node->dataStructure_LL[j] = 'A';
-
 					}
 					else if(result==1)
 					{
@@ -296,10 +278,9 @@ class FASTAreadset_DA
 				}
 
 			}
-							
 		}
 
-		double similarityScore(char a, char b)
+		double similarity_score_matrix(char a, char b)
 		{
 			double result;
 			if(a==b)
@@ -313,119 +294,117 @@ class FASTAreadset_DA
 			return result;
 		}
 
-		double findMax(double array[], int length)
+		double find_max_Dij(double array[], int length)
 		{
 			double max = array[0];
-			ind = 0;
+			index = 0;
 
 			for(int i=1; i<length; i++)
 			{
 				if(array[i] > max)
 				{
 					max = array[i];
-					ind=i;
+					index=i;
 				}
 			}
 			return max;
 		}
 
-		void SW_algorithm()
+		void SW_algorithm() //Smith Waterman Algorithm
 		{
 
-			string seqA; // sequence A
-			string seqB; // sequence B
+			string sequence_A; // sequence A
+			string sequence_B; // sequence B
 			
 			Node* temp_read = head; //pointer to traverse the linked list
 			Node* temp_genome = data_head;
 
 			while(temp_read != NULL)
 			{
-				seqA = temp_read -> dataStructure_LL;
+				sequence_A = temp_read -> dataStructure_LL;
 
 				while(temp_genome != NULL)
 				{
 				
-					cout << "\n***********************************************************************************************************************\n" <<endl;
+					cout << "\n****************************************************\n" <<endl;
 					
-					seqB = temp_genome -> dataStructure_LL_genome;
+					sequence_B = temp_genome -> dataStructure_LL_genome;
 					
 					temp_genome = temp_genome -> next;
 					
-					cout<<"Sequence 01 and sequence 02: \n"<<endl;
-					cout << seqA << endl;
-					cout << seqB << endl;
+					cout<<"Sequence 01 and Sequence 02: \n"<<endl;
+					cout << sequence_A << endl;
+					cout << sequence_B << endl;
 			
-					// initialize some variables
-					int lengthSeqA = seqA.length();
-					int lengthSeqB = seqB.length();
-					
-					// initialize matrix
-					double matrix[lengthSeqA+1][lengthSeqB+1];
-					for(int i=0;i<=lengthSeqA;i++)
+					int length_of_sequence_A = sequence_A.length();
+					int length_of_sequence_B = sequence_B.length();
+					double matrix[length_of_sequence_A+1][length_of_sequence_B+1];
+
+					for(int i=0;i<=length_of_sequence_A;i++)
 					{
-						for(int j=0;j<=lengthSeqB;j++)
+						for(int j=0;j<=length_of_sequence_B;j++)
 						{
 							matrix[i][j]=0;
 						}
 					}
 
-					double traceback[4];
-					int I_i[lengthSeqA+1][lengthSeqB+1];
-					int I_j[lengthSeqA+1][lengthSeqB+1];
+					double traceback_array[4];
+					int I_i[length_of_sequence_A+1][length_of_sequence_B+1];
+					int I_j[length_of_sequence_A+1][length_of_sequence_B+1];
 
 
-					//start populating matrix
-					for (int i=1;i<=lengthSeqA;i++)
+					for (int i=1;i<=length_of_sequence_A;i++)
 					{
-						for(int j=0;j<=lengthSeqB;j++)
+						for(int j=0;j<=length_of_sequence_B;j++)
 						{
-							// cout << i << " " << j << endl;
-							traceback[0] = matrix[i-1][j-1]+similarityScore(seqA[i-1],seqB[j-1]);
-							traceback[1] = matrix[i-1][j]+penalty;
-							traceback[2] = matrix[i][j-1]+penalty;
-							traceback[3] = 0;
-							matrix[i][j] = findMax(traceback,4);
-							switch(ind)
-							{							///chnage into if conditions***************&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-								case 0:
-									I_i[i][j] = i-1;
-									I_j[i][j] = j-1;
-									break;
-								case 1:
-									I_i[i][j] = i-1;
-									I_j[i][j] = j;
-									break;
-								case 2:
-									I_i[i][j] = i;
-									I_j[i][j] = j-1;
-									break;
-								case 3:
-									I_i[i][j] = i;
-									I_j[i][j] = j;
-									break;
+							traceback_array[0] = matrix[i-1][j-1]+similarity_score_matrix(sequence_A[i-1],sequence_B[j-1]);
+							traceback_array[1] = matrix[i-1][j]+GAP_penalty;
+							traceback_array[2] = matrix[i][j-1]+GAP_penalty;
+							traceback_array[3] = 0;
+							matrix[i][j] = find_max_Dij(traceback_array,4);
+							
+							//value of index changes from find_max_Dij function
+							if(index==0)
+							{							
+								I_i[i][j] = i-1;
+								I_j[i][j] = j-1;
+							}
+							else if(index==1)
+							{	
+								I_i[i][j] = i-1;
+								I_j[i][j] = j;
+							}
+							else if(index==2)
+							{
+								I_i[i][j] = i;
+								I_j[i][j] = j-1;
+							}
+							else if(index==3)
+							{
+								I_i[i][j] = i;
+								I_j[i][j] = j;
 							}
 						}
 					}
 					cout<<endl;
-					// cout << "***********************************************************************************************************************\n" <<endl;
-					cout << "Print the scoring matrix to console: \n" << endl;
+					// cout << "Print the scoring matrix to console: \n" << endl;
 
 					// print the scoring matrix to console
-					for(int i=1;i<lengthSeqA;i++)
-					{
-						for(int j=1;j<lengthSeqB;j++)
-						{
-							cout << matrix[i][j] << " ";
-						}
-						cout << endl;
-					}
+						// for(int i=1;i<length_of_sequence_A;i++)
+						// {
+						// 	for(int j=1;j<length_of_sequence_B;j++)
+						// 	{
+						// 		cout << matrix[i][j] << " ";
+						// 	}
+						// 	cout << endl;
+						// }
 
 					// find the max score in the matrix
 					double matrix_max = 0;
 					int i_max=0, j_max=0;
-					for(int i=1;i<lengthSeqA;i++)
+					for(int i=1;i<length_of_sequence_A;i++)
 					{
-						for(int j=1;j<lengthSeqB;j++)
+						for(int j=1;j<length_of_sequence_B;j++)
 						{
 							if(matrix[i][j]>matrix_max)
 							{
@@ -436,39 +415,40 @@ class FASTAreadset_DA
 						}
 					}
 
-					cout << "\nMax score in the matrix is: " << matrix_max << endl;
+					cout << "Max score in the matrix is: " << matrix_max << endl;
 
-					// traceback
+					// traceback_array
 					
 					int current_i=i_max,current_j=j_max; 
 
-					int next_i=I_i[current_i][current_j];
-					int next_j=I_j[current_i][current_j];
+					int next_i = I_i[current_i][current_j];
+					int next_j = I_j[current_i][current_j];
 
 					int tick=0;
 
-					char consensus_a[lengthSeqA+lengthSeqB+2],consensus_b[lengthSeqA+lengthSeqB+2];
+					char consensus_a[length_of_sequence_A + length_of_sequence_B + 2];
+					char consensus_b[length_of_sequence_A + length_of_sequence_B + 2];
 
 					while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0))
 					{
 
 						if(next_i==current_i)
 						{
-							consensus_a[tick] = '_';                  // deletion in A	
+							consensus_a[tick] = '_';                  	
 							
 						}  
 						else
 						{
-							consensus_a[tick] = seqA[current_i -1];   // match/mismatch in A
+							consensus_a[tick] = sequence_A[current_i - 1]; 
 
 						}
 						if(next_j==current_j)  
 						{
-							consensus_b[tick] = '_';                  // deletion in B
+							consensus_b[tick] = '_';                 
 						}
 						else
 						{
-		                   consensus_b[tick] = seqB[current_j -1];   // match/mismatch in B
+		                   consensus_b[tick] = sequence_B[current_j - 1]; 
 						}   
 
 						current_i = next_i;
@@ -478,12 +458,11 @@ class FASTAreadset_DA
 						tick++;
 					}
 
-					cout<<"\nAlignment of sequence 01 and sequence 02: (Traceback)\n"<<endl;
+					cout<<"\nAlignment of sequence 01 and sequence 02: (traceback_array)\n"<<endl;
 
-					for(int i=tick-1;i>=0;i--) cout<<consensus_a[i]; 
-					cout<<endl;
+					for(int i=tick-1;i>=0;i--) cout<<consensus_a[i]; cout<<endl;
 
-					string markings[lengthSeqA+lengthSeqB+2];
+					string markings[length_of_sequence_A+length_of_sequence_B+2];
 
 					for(int i=tick-1;i>=0;i--)
 					{
@@ -501,19 +480,16 @@ class FASTAreadset_DA
 						}
 						
 					}
-					for(int i=tick-1;i>=0;i--) cout<<markings[i];
-					cout<<endl;
+					for(int i=tick-1;i>=0;i--) cout<<markings[i]; cout<<endl;
 
 
-					for(int j=tick-1;j>=0;j--) cout<<consensus_b[j];
-					cout<<endl;
-					cout << "\n***********************************************************************************************************************" <<endl;
+					for(int j=tick-1;j>=0;j--) cout<<consensus_b[j]; cout<<endl;
+
+					cout << "\n****************************************************" <<endl;
 					
 				}
 				temp_read = temp_read -> next;
 			}
-
-
 		}
 		
         void delete_data_structure() // function to print deconstructor inilialisation 
@@ -535,7 +511,6 @@ class FASTAreadset_DA
             }
  
             *head_ref = NULL;
-
         }
    
         ~FASTAreadset_DA() //destructor
@@ -544,7 +519,8 @@ class FASTAreadset_DA
 				deleteList(&data_head);
 				delete[] header_array;
 				delete[] data_array;
-
+				delete[] data_array_genome;
+				delete[] data_random_seq;
             }
         
 };
