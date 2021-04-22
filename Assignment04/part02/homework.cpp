@@ -41,7 +41,7 @@ int main(int argc, char ** argv){
 		cout << "The fourth argument is: " << argv[3] << endl;	//file path 02
 	}
 
-	int user_defined_values = 1;	//size of random read sequence 
+	int user_defined_values = 100;	//size of random read sequence 
 
 	time_t begin, end; // timer initialization
 	
@@ -60,9 +60,9 @@ int main(int argc, char ** argv){
 		case 'A': 
 			cout << "\nFunction in C++ that implements the Smith-Waterman alignment between two genomic sequences.: \n" << endl;
 			fasta.read_queries();
-			// fasta.display_read_queries();
+// 			fasta.display_read_queries();
 			fasta.read_genomic_data(argv[3]);
-			// fasta.print_genomic_data();
+// 			fasta.print_genomic_data();
 			fasta.SW_algorithm();
 			break;
 
@@ -81,20 +81,20 @@ int main(int argc, char ** argv){
 		//Part 02 - a
 		case 'C': 
 			cout << "\n:Having a BLAST - Implement a seed-based Smith Waterman: \n" << endl;
-			// fasta_BLAST.read_queries_11mers();
-			// fasta_BLAST.display_read_queries_blast();
+			fasta_BLAST.read_queries_11mers();
+// 			fasta_BLAST.display_read_queries_blast();
 			fasta_BLAST.read_genome_11mers(argv[3]);
-			fasta_BLAST.print_genomic_data_BLAST();
+// 			fasta_BLAST.print_genomic_data_BLAST();
+			fasta_BLAST.hash_table_creation(argv[3]);
+			fasta_BLAST.search_query_seed_in_hashtable(argv[3]);
 			break;
 
 		case 'D': 
 			cout << "\nSearching in the chain-linked hash table: \n" << endl;
-			// fasta_chain.read_reads_chain();
-			// fasta_chain.hash_table_creation();
-			// fasta_chain.display_hash_collisions();
-			// fasta_chain.display_reads_chain();
-			// fasta_chain.read_genomic_data_chain(argv[3]);
-			// fasta_chain.search_genomic_data_chain();
+			
+			fasta_BLAST.read_genome_11mers(argv[3]);
+			fasta_BLAST.hash_table_creation(argv[3]);
+			// fasta_BLAST.random_seq_generator(user_defined_values);
 			break;
 
 

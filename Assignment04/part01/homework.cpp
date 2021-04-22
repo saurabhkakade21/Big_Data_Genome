@@ -8,7 +8,7 @@
 #include <fstream>
 #include <string.h>
 #include "homework.h" //part A
-#include "homework_BLAST.h" //part B
+// #include "homework_BLAST.h" //part B
 #include <time.h>
 
 using namespace std;
@@ -48,7 +48,7 @@ int main(int argc, char ** argv){
 	char* second_argument = argv[1];	//switch case parameter
 
 	FASTAreadset_DA fasta(argv[2]);		//calling class from homework.h to solve part 01
-	FASTAreadset_BLAST fasta_BLAST(argv[2]); //calling class from homework_BLOCK.h to solve part 01
+	// FASTAreadset_BLAST fasta_BLAST(argv[2]); //calling class from homework_BLOCK.h to solve part 01
 	
 	
 	time(&begin);	//to begin the timer

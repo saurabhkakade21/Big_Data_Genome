@@ -10,6 +10,8 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string.h>
+#include <cstring>
+
 #include <math.h>
 #include "homework.h"
 
@@ -19,19 +21,22 @@ struct Node_blast
 {
     char dataStructure_LL[11];	//to store data
     char headercounter_LL[7];	//to store read head
+    char dataStructure_LL_random[50];
 	char dataStructure_LL_genome[11];	//to store genome data
 	char headercounter_LL_genome[40];	//to store genome head
+	char *hash_dataStructure;		//to store data
+    unsigned int header_Hash;
 	struct Node_blast *next_BLAST;
 };
      
 
 //structure node_hash function for linked list
-struct Node_Hash 
-{
-    char *hash_dataStructure_BLAST;		//to store data
-    unsigned int header_BLAST;			//to store read head
-	struct Node_Hash *next_hash;
-};
+// struct Node_Hash 
+// {
+//     char *hash_dataStructure;		//to store data
+//     unsigned int header_Hash;			//to store read head
+// 	struct Node_Hash *next_hash;
+// };
 
 //main class 
 class FASTAreadset_BLAST
@@ -44,25 +49,38 @@ class FASTAreadset_BLAST
 		char head_array_genome[38]; //to store head of genome
 		char ** queries_stack;
 
-		unsigned int total_BLAST,value_BLAST,hashtablesize_BLAST,fragment_present,collisions_BLAST = 0;
+		unsigned int total = 0;
+		unsigned int power = 0;
+		unsigned int value_BLAST = 0;
+		unsigned int value = 0;
+		unsigned int hashtablesize = 0;
+		unsigned int fragment_present = 0;
+		unsigned int collisions_BLAST = 0;
+		unsigned int total_BLAST = 0;
+		unsigned int collisions = 0;
 		int usersizeofhashtable; //to read the number of reads from user
+		int index; //to store max value of Dij matrix
+		double GAP_penalty=-3;
+		double match = 2;
+		double mismatch = -1;
+		// bool bool_array[4294967295];
+		bool bool_array[4200000]; //size of hash table 4194271
 
         string file_path_BLAST; // to store file name
+        string file_path_BLAST_02; // to store file name
+        
         ifstream input_BLAST; //used for file operations
 
         Node_blast* head_BLAST; // to create new node head
 		Node_blast* data_head_BLAST; // to create new node for temporary purpose
 
-		Node_Hash* head_hash; // to create new node head
-		Node_Hash* data_head_hash; // to create new node for temporary purpose
-		bool bool_array_BLAST[2];
+// 		bool bool_array_BLAST[2];
 		char query_stack_array[40][11];
 
     public:
 
-		Node_Hash **hash_table;
+		Node_blast **hash_table;
 
-        
         FASTAreadset_BLAST() //constructor
         {
             cout << "Constructor Function executed !!!" << endl;
@@ -82,12 +100,222 @@ class FASTAreadset_BLAST
 
 			input_BLAST.open(file_path_BLAST.c_str()); 
 
-			head_hash = NULL;
-			data_head_hash = NULL;
+		
 			head_BLAST = NULL;
 			data_head_BLAST = NULL;
 
         }
+        
+        double similarity_score_matrix(char a, char b)
+		{
+		     
+			double result;
+			if(a==b)
+			{
+				result=match;
+			}
+			else
+			{
+				result=mismatch;
+			}
+			return result;
+		}
+
+		double find_max_Dij(double array[], int length)
+		{
+			double max = array[0];
+			index = 0;
+
+			for(int i=1; i<length; i++)
+			{
+				if(array[i] > max)
+				{
+					max = array[i];
+					index=i;
+				}
+			}
+			return max;
+		}
+
+		void SW_algorithm(string query, string genome) //Smith Waterman Algorithm
+		{
+
+			string sequence_A; // sequence A
+			string sequence_B; // sequence B
+			
+		
+				sequence_A = query;
+
+				sequence_B = genome;
+					
+					
+					cout<<"Sequence 01 and Sequence 02: \n"<<endl;
+					cout << sequence_A << endl;
+					cout << sequence_B << endl;
+			
+					int length_of_sequence_A = sequence_A.length();
+					int length_of_sequence_B = sequence_B.length();
+					double matrix[length_of_sequence_A+1][length_of_sequence_B+1];
+
+					for(int i=0;i<=length_of_sequence_A;i++)
+					{
+						for(int j=0;j<=length_of_sequence_B;j++)
+						{
+							matrix[i][j]=0;
+				// 			cout << matrix[i][j];
+						}
+				// 		cout << endl;
+					}
+					
+
+					double traceback_array[4];
+					int I_i[length_of_sequence_A+1][length_of_sequence_B+1];
+					int I_j[length_of_sequence_A+1][length_of_sequence_B+1];
+
+
+                    
+					for (int i=1;i<=length_of_sequence_A;i++)
+					{
+						for(int j=0;j<=length_of_sequence_B;j++)
+						{
+						   
+							traceback_array[0] = matrix[i-1][j-1] + similarity_score_matrix(sequence_A[i-1],sequence_B[j]);
+				// 			cout << "hello" << endl;
+							traceback_array[1] = matrix[i-1][j]+GAP_penalty;
+							traceback_array[2] = matrix[i][j-1]+GAP_penalty;
+							traceback_array[3] = 0;
+							matrix[i][j] = find_max_Dij(traceback_array,4);
+							
+							//value of index changes from find_max_Dij function
+							if(index==0)
+							{							
+								I_i[i][j] = i-1;
+								I_j[i][j] = j-1;
+							}
+							else if(index==1)
+							{	
+								I_i[i][j] = i-1;
+								I_j[i][j] = j;
+							}
+							else if(index==2)
+							{
+								I_i[i][j] = i;
+								I_j[i][j] = j-1;
+							}
+							else if(index==3)
+							{
+								I_i[i][j] = i;
+								I_j[i][j] = j;
+							}
+							
+						}
+					}
+					cout<<endl;
+					// cout << "Print the scoring matrix to console: \n" << endl;
+
+					// print the scoring matrix to console
+						// for(int i=1;i<length_of_sequence_A;i++)
+						// {
+						// 	for(int j=1;j<length_of_sequence_B;j++)
+						// 	{
+						// 		cout << matrix[i][j] << " ";
+						// 	}
+						// 	cout << endl;
+						// }
+
+					// find the max score in the matrix
+					double matrix_max = 0;
+					int i_max=0, j_max=0;
+					for(int i=1;i<length_of_sequence_A;i++)
+					{
+						for(int j=1;j<length_of_sequence_B;j++)
+						{
+							if(matrix[i][j]>matrix_max)
+							{
+								matrix_max = matrix[i][j];
+								i_max=i;
+								j_max=j;
+							}
+						}
+					}
+
+					cout << "Max score in the matrix is: " << matrix_max << endl;
+
+					// traceback_array
+					
+					int current_i=i_max,current_j=j_max; 
+
+					int next_i = I_i[current_i][current_j];
+					int next_j = I_j[current_i][current_j];
+
+					int tick=0;
+
+					char consensus_a[length_of_sequence_A + length_of_sequence_B + 2];
+					char consensus_b[length_of_sequence_A + length_of_sequence_B + 2];
+
+					while(((current_i!=next_i) || (current_j!=next_j)) && (next_j!=0) && (next_i!=0))
+					{
+
+						if(next_i==current_i)
+						{
+							consensus_a[tick] = '_';                  	
+							
+						}  
+						else
+						{
+							consensus_a[tick] = sequence_A[current_i - 1]; 
+
+						}
+						if(next_j==current_j)  
+						{
+							consensus_b[tick] = '_';                 
+						}
+						else
+						{
+		                   consensus_b[tick] = sequence_B[current_j - 1]; 
+						}   
+
+						current_i = next_i;
+						current_j = next_j;
+						next_i = I_i[current_i][current_j];
+						next_j = I_j[current_i][current_j];
+						tick++;
+					}
+
+					cout<<"\nAlignment of sequence 01 and sequence 02: (traceback_array)\n"<<endl;
+
+					for(int i=tick-1;i>=0;i--) cout<<consensus_a[i]; cout<<endl;
+
+					string markings[length_of_sequence_A+length_of_sequence_B+2];
+
+					for(int i=tick-1;i>=0;i--)
+					{
+						if(consensus_a[i]==consensus_b[i])
+						{
+							markings[i]="|";
+						}
+						else if (consensus_a[i]== '_' || consensus_b[i] == '_')
+						{
+							markings[i]=" ";
+						}
+						else if (consensus_a[i] != consensus_b[i])
+						{
+							markings[i]="x";
+						}
+						
+					}
+					for(int i=tick-1;i>=0;i--) cout<<markings[i]; cout<<endl;
+
+
+					for(int j=tick-1;j>=0;j--) cout<<consensus_b[j]; cout<<endl;
+
+				// 	cout << "\n****************************************************" <<endl;
+					
+				
+				
+// 			return matrix_max;	
+			
+		}
 		
 		int size_of_table_BLAST() //to count the size of the read dataset file
 		{
@@ -169,11 +397,11 @@ class FASTAreadset_BLAST
 										// cout << temp[k];
 									}
 									// cout << endl;
-									for (int k = 0; k < 11; k++)
-									{
-										// cout << query_stack_array[m][k];
+								// 	for (int k = 0; k < 11; k++)
+								// 	{
+								// 		// cout << query_stack_array[m][k];
 										
-									}
+								// 	}
 									new_node_blast->next_BLAST = NULL;
 
 									if(current_ll_blast != NULL)
@@ -217,148 +445,116 @@ class FASTAreadset_BLAST
 				temp = temp -> next_BLAST;
 			}
 		}
-		
 
-		void hash_table_creation()	//to create hash table
+		int radix_notation(string filepath02) //radix function to find hash function
 		{
+			unsigned int size = size_of_table_genome_BLAST(filepath02);
+
+			int power = 0;
+			int demo_counter = 0;
 			
-			hash_table =  new Node_Hash*[usersizeofhashtable];
- 			
-			for(int i = 0 ; i < usersizeofhashtable ;i++)
+
+			Node_blast* current = data_head_BLAST;
+
+			while(current != NULL)
 			{
-				hash_table[i] = NULL;
- 			}
+		
+				total = 0;
+				power = 1;
 
-			unsigned int size_BLAST = size_of_table_BLAST();
-			
-			int power_BLAST = 0;
-
- 			for(int i = 0; i < usersizeofhashtable ; i++)
-			{
-            	
-				power_BLAST = 1;
-			
-				for (int j = 0; j < 16; j++)
-				{
+					for (int j = 0; j < 11; j++)
+					{
 					
-					//A==0, C==1, G==2, T==3
+						//A==0, C==1, G==2, T==3 values for radix calculations
 
-					if(data_array_BLAST[i][j]=='A')
-					{
-						value_BLAST = 0;
-					}
+						// cout << (current -> dataStructure_LL_genome)[0] << endl;
 
-					if(data_array_BLAST[i][j]=='C')
-					{
-						value_BLAST = 1;
+						if((current -> dataStructure_LL_genome)[j]=='A')
+						{
+							value = 0;
+						}
+
+						if((current -> dataStructure_LL_genome)[j]=='C')
+						{
+							value = 1;
+						}
+						
+						if((current -> dataStructure_LL_genome)[j]=='G')
+						{
+							value = 2;
+						}
+
+						if((current -> dataStructure_LL_genome)[j]=='T')
+						{
+							value = 3;
+						}
+
+						total = total + (value * power);
+
+						power = power * 4;
+
 					}
 					
-					if(data_array_BLAST[i][j]=='G')
+				// 	cout << current -> dataStructure_LL_genome << endl;
+				// 	cout << demo_counter << endl;
+                    // demo_counter++;    
+
+					current = current -> next_BLAST;
+
+
+					if(hashtablesize > total)
 					{
-						value_BLAST = 2;
+						//do nothing
 					}
-
-					if(data_array_BLAST[i][j]=='T')
-					{
-						value_BLAST = 3;
-					}
-
-					total_BLAST = total_BLAST + (value_BLAST * power_BLAST);
-
-					power_BLAST = power_BLAST * 4;
-
-				}
-
-				total_BLAST = total_BLAST % usersizeofhashtable;
-				
-				Node_Hash *current = hash_table[total_BLAST];
-				
-             	Node_Hash *temp_BLAST = NULL;
-             	
-				while (current != NULL)
-				{
-					temp_BLAST = current;
-					current = current->next_hash;
-				}
-
-				if (current == NULL)
-				{
-					current = new Node_Hash();
-					current->header_BLAST = total_BLAST;
-					current->hash_dataStructure_BLAST = new char[16];
-
-					for(int k = 0 ; k < 16 ; k++)
-					{
-						current->hash_dataStructure_BLAST[k] = data_array_BLAST[i][k];
-					}
-
-					if (temp_BLAST == NULL)
-					{
-						hash_table[total_BLAST] = current;
-					}
-
 					else
 					{
-						temp_BLAST->next_hash = current;
+						hashtablesize = total;
+				// 		cout << hashtablesize << endl;
 					}
 
-				}
-				else
-				{
-					for(int m = 0 ; m < 16 ; m++)
+
+
+					if(bool_array[total]==true)
 					{
-	                	(current->hash_dataStructure_BLAST)[m] = data_array_BLAST[i][m];
-					}
-				}
-			}
-		}
+						collisions++;
+						// cout << "hello" << endl;
 
-		void display_hash_collisions()	//to display number of collisions
-		{
-			Node_Hash* temp_coll = new Node_Hash();
+					}
+					else
+					{
+						bool_array[total]=true;
+
+					}
+
+			}
+
 			
-			for(int i = 0 ; i < usersizeofhashtable ; i ++)
-			{
-				if(hash_table[i] != NULL)
-				{
-					temp_coll=hash_table[i];
+					
+			
+			int unique_seq = 0;
 
-					while(temp_coll->next_hash != NULL)
-					{
-						temp_coll = temp_coll->next_hash;
-						collisions_BLAST++;
-					}
+			for(int i = 0; i < hashtablesize; i++)
+			{
+				
+				if(bool_array[i] == true)
+				{
+					unique_seq++;
 				}
 			}
 			
-			cout<< "Number of Collisions: " << collisions_BLAST << endl;
+			cout << "Size of HASH table :" << hashtablesize << endl;
+			cout << "Collisions :" << collisions << endl;
+			cout << "Number of UNIQUE sequences: " << unique_seq<< endl;
+			return hashtablesize;
 		}
-
-		void display_reads_BLAST() // display function to print linked list
-		{
-			Node_Hash* temp01 = new Node_Hash(); //pointer to traverse the linked list
-		
-			for(int i = 0 ; i < 10 ; i ++)
-			{
-				if(hash_table[i] != NULL)
-				{
-					temp01 = hash_table[i];
-					while(temp01 ->  next_hash != NULL)
-					{
-  						cout << temp01 ->hash_dataStructure_BLAST << endl ;
-  						temp01 = temp01->next_hash;
-					}
-				}
-			}
-		}
-
+	
 		int size_of_table_genome_BLAST(string filepath_genome) //to count the size of the read dataset file
 		{
 			string input_line_BLAST;
 			int counter1_BLAST = 0;
 			ifstream input_BLAST;
-			file_path_BLAST = filepath_genome;
-			input_BLAST.open(file_path_BLAST.c_str()); 
+			file_path_BLAST_02 = filepath_genome;
+			input_BLAST.open(file_path_BLAST_02.c_str()); 
 
 			while(getline(input_BLAST,input_line_BLAST))
 			{
@@ -368,7 +564,7 @@ class FASTAreadset_BLAST
 			return counter1_BLAST;
 		}
 
-	   	void read_genome_11mers(string filepath2)	//Read in the Bacillus anthracis genome file
+	   	void read_genome_11mers(string filepath2)	
 		{
 			string input2_line2_BLAST;
 			ifstream input2_BLAST;
@@ -446,11 +642,11 @@ class FASTAreadset_BLAST
 										// cout << temp[k];
 									}
 									// cout << endl;
-									for (int k = 0; k < 11; k++)
-									{
-										// cout << query_stack_array[m][k];
+								// 	for (int k = 0; k < 11; k++)
+								// 	{
+								// 		// cout << query_stack_array[m][k];
 										
-									}
+								// 	}
 									new_node_blast->next_BLAST = NULL;
 
 									if(current_ll_blast != NULL)
@@ -489,109 +685,373 @@ class FASTAreadset_BLAST
 
 			// while (input2_BLAST.get(genome_character_BLAST))
 			// {
-  	// 			if(genome_character_BLAST == 'A' || genome_character_BLAST == 'C' || genome_character_BLAST == 'G' || genome_character_BLAST == 'T' || genome_character_BLAST == 'N')
-			// 	{
-  					
-			// 		temp_BLAST[count_BLAST] = genome_character_BLAST;
-  	// 				count_BLAST++;
-				
-  	// 				if(count_BLAST == 12)
-			// 		{
-			// 			count_BLAST--;	//as we are counting from 0 to last will be 15
-
-  	// 					num_of_records_BLAST ++;
-  						
-  	// 					Node_Hash* new_node = new Node_Hash;
-
-			// 			new_node ->hash_dataStructure_BLAST = new char[16];
-
-  	// 					for(int k = 0; k < 11; k++)
-			// 			{
-			//     			(new_node -> hash_dataStructure_BLAST)[k] = temp_BLAST[k];
-			// 			}
-
-			//     		(new_node -> hash_dataStructure_BLAST)[16] = '\0';
-
-			//     		new_node -> next_BLAST = NULL;
-
-			// 			count_BLAST = 0;
-			    		
-			//     		if(num_of_records_BLAST == 1)
-			// 			{
-			//     			data_head_BLAST = new_node;
-			// 			}
-			// 			else
-			// 			{
-			// 				current -> next_BLAST = new_node;
-			// 			}
-
-			// 			current = new_node;
-						
-			// 		}
-
-			// 		if(data_head_BLAST != NULL)
-			// 		{
-			// 			for(int i = 1; i < 16; i++)
-			// 			{
-			// 				temp_BLAST[i - 1] = temp_BLAST[i];
-			// 			}
-			// 		}
-			// 	}  
-			// 	// count =0;
-			// }         
-			
-
 			input2_BLAST.close();
 		}
 		
-		void search_genomic_data_BLAST()
+		void hash_table_creation(string filepath2)	//to create hash table
 		{
-			int cnt;
-			Node_Hash* current = data_head_hash;
-
-			while(current->next_hash != NULL)
+		    
+		    int hashtablevalue_return = radix_notation(filepath2);
+			
+			hash_table =  new Node_blast*[hashtablevalue_return]; //size is calculated from highest radix value
+ 			
+			for(int i = 0 ; i < hashtablevalue_return ;i++)
 			{
-				cnt++;
-				current=current->next_hash;
+				hash_table[i] = NULL;
+ 			}
+
+			Node_blast* current = data_head_BLAST;
+
+     		while(current != NULL)
+			{
+		
+				total = 0;
+				power = 1;
+				// 	cout << (current -> dataStructure_LL_genome) << endl;
+
+					for (int j = 0; j < 11; j++)
+					{
+					
+						//A==0, C==1, G==2, T==3 values for radix calculations
+
+				// 		cout << (current -> dataStructure_LL_genome)[0] << endl;
+
+						if((current -> dataStructure_LL_genome)[j]=='A')
+						{
+							value = 0;
+						}
+
+						if((current -> dataStructure_LL_genome)[j]=='C')
+						{
+							value = 1;
+						}
+						
+						if((current -> dataStructure_LL_genome)[j]=='G')
+						{
+							value = 2;
+						}
+
+						if((current -> dataStructure_LL_genome)[j]=='T')
+						{
+							value = 3;
+						}
+
+						total = total + (value * power);
+
+						power = power * 4;
+
+					}
+					
+				// 	cout << total << endl;
+					
+					
+					
+				// total = total % hashtablevalue_return;
+				
+				Node_blast *current02 = hash_table[total];
+				
+             	Node_blast *temp_chain = NULL;
+             	
+				while (current02 != NULL)
+				{
+					temp_chain = current02;
+				// 	cout << temp_chain;
+					current02 = current02->next_BLAST;
+				}
+
+				if (current02 == NULL)
+				{
+					current02 = new Node_blast();
+					current02->header_Hash = total;
+					current02->hash_dataStructure = new char[11];
+					
+				// 	cout << "hello" << endl;
+
+					for(int k = 0 ; k < 11 ; k++)
+					{
+						current02->hash_dataStructure[k] = (current -> dataStructure_LL_genome)[k];
+						
+				// 		cout << current->dataStructure_LL_genome[k];
+					}
+				// 	cout << endl;
+
+					if (temp_chain == NULL)
+					{
+						hash_table[total] = current02;
+					}
+
+					else
+					{
+						temp_chain->next_BLAST = current02;
+					}
+
+				}
+				else
+				{
+					for(int m = 0 ; m < 11 ; m++)
+					{
+	                	(current02->hash_dataStructure)[m] = current -> dataStructure_LL_genome[m];
+					}
+				}
+				// cout << current02->hash_dataStructure << endl;
+				current = current -> next_BLAST;
 			}
-
-			unsigned int size = cnt;
-			// unsigned int total,value,hashsize,fragment_present = 0;
+			
+// 			for(int i = 0 ; i < hashtablevalue_return ;i++)
+// 			{
+// 			    if(hash_table[i] != 0)
+// 			    {
+// 			        cout << hash_table[i] <<endl;
+// 			    }
+				
+//  			}
+			
+			
+		}
+		
+		void search_query_seed_in_hashtable(string filepath2)
+		{
+			unsigned int size = size_of_table_BLAST();
+			int counter_BLAST = size_of_table_genome_BLAST(filepath2);
+			unsigned int total,value,hashsize,fragment_present = 0;
 			int power = 0;
+			char sequence_from_hashtable_genome[70];
 
-			Node_Hash* temp = data_head_hash;
+			Node_blast* temp = head_BLAST;
 			
 			while (temp!=NULL)
 			{
-				
-				total_BLAST = 0;
+				total = 0;
 				power = 1;
-
-				for (int i = 0; i < 16; i++)
+				for (int j = 0; j < 11; j++)
 				{
 					
-					if(hash_table[i] != NULL)
+					//A==0, C==1, G==2, T==3
+
+					if(temp->dataStructure_LL[j]=='A')
 					{
-						temp = hash_table[i];
-
-						while(temp->next_hash != NULL)
-						{ 
-							if(hash_table[i]->header_BLAST == i)
-							{
-								fragment_present++;
- 							 	temp = temp->next_hash;
-							}
-						}
-
+						value = 0;
 					}
+
+					if(temp->dataStructure_LL[j]=='C')
+					{
+						value = 1;
+					}
+					
+					if(temp->dataStructure_LL[j]=='G')
+					{
+						value = 2;
+					}
+
+					if(temp->dataStructure_LL[j]=='T')
+					{
+						value = 3;
+					}
+
+					total = total + (value * power);
+
+					power = power * 4;
+
 				}
 				
-			}
-		
-			cout << "Genome 16-mer fragments found in read set: " << fragment_present << endl;
-			
-		}
+				
 
+				if(hashsize > total)
+				{
+					//do nothing
+				}
+				else
+				{
+					hashsize = total;
+				}
+				
+				
+				
+
+				if(bool_array[total]==true)
+				{
+					fragment_present++;
+					
+					Node_blast* current02 = hash_table[total];
+				// 	dataseq[50];
+					
+				// 	Node_blast* temp02 = data_head;
+					
+					char dataseq[50];
+					int counter = 0;
+					int val = 1;
+					while(current02 != NULL)
+					{
+    					
+    					if(strcmp(temp -> dataStructure_LL, current02 -> hash_dataStructure)==0)
+    					{
+    					   // cout << temp -> dataStructure_LL << "....."<< current02 -> hash_dataStructure <<endl;
+    					    
+    					    for(int l = 0; l< 11 ; l++)
+    					    {
+    					        dataseq[l] = (temp -> dataStructure_LL)[l];
+    					       // cout << "***********"<<dataseq[l];
+    					    }
+    					    cout << endl;
+    					    Node_blast* current03 = data_head_BLAST;
+    					    
+    					    while(current03 != NULL)
+    					    {
+    					        if(strcmp(temp -> dataStructure_LL, current03 -> dataStructure_LL_genome)==0)
+    					        {
+    					            
+    					           // for(int t = 0; t < (50-11);t++)
+    					           // {
+    					                for(int z = 11; z < 50; z++)
+    					                {
+    					                    current03 = current03 -> next_BLAST;
+    					                    dataseq[z] = (current03 -> dataStructure_LL_genome)[0];
+    					                    
+    					                   // cout << dataseq[z];
+    					                }
+    					                cout << endl;
+    					           // }
+    					        
+    					        }
+    					        current03 = current03 -> next_BLAST;
+    					    }
+    					    
+    					   // cout << temp -> dataStructure_LL << "..." << dataseq << endl;
+    					   // SW_algorithm(temp -> dataStructure_LL, dataseq);
+    					   
+    					   
+    					        
+    					        
+    					    
+    					}   
+    				// 	cout << "....."<< current02 -> hash_dataStructure << endl;
+    					
+    					current02 = current02->next_BLAST;
+    					
+    					
+					}
+					 SW_algorithm(temp -> dataStructure_LL, dataseq);
+        				
+				}
+				else
+				{
+					//do nothing
+				}
+				temp = temp -> next_BLAST;
+				
+			}
+			
+			
+			
+
+			cout << "Query 11-mer fragments found in genome set: " << fragment_present << endl;
+		}
+		
+		void random_seq_generator(int user_defined_values) // random sequence generator as per the user size of total queries.
+		{
+			
+			Node_blast * current_ll = new Node_blast;
+			
+			srand(time(0));
+
+			for (int i = 0; i < user_defined_values; i++)
+			{
+				Node_blast * new_node = new Node_blast;
+				
+				for (int j = 0; j < 50; j++)
+				{
+					int result = ( rand() % 4 );
+
+					if(result==0)
+					{
+						new_node->dataStructure_LL_random[j] = 'A';
+					}
+					else if(result==1)
+					{
+						new_node->dataStructure_LL_random[j] = 'C';
+					}
+					else if(result==2)
+					{
+						new_node->dataStructure_LL_random[j] = 'G';
+					}
+					else if(result==3)
+					{
+						new_node->dataStructure_LL_random[j] = 'T';
+					}
+
+				}
+				
+				// cout << new_node->dataStructure_LL_random << endl;
+
+				new_node->next_BLAST = NULL;
+
+				if(current_ll != NULL)
+				{
+					current_ll->next_BLAST = new_node;
+				}
+
+				current_ll = new_node;
+
+				if(i == 0)
+				{
+					head_BLAST = new_node;
+				}
+
+			}
+		}
+		
+		void search_random_query_seed_in_hashtable(string filepath2)
+		{
+			unsigned int size = size_of_table_BLAST();
+			int counter_BLAST = size_of_table_genome_BLAST(filepath2);
+			unsigned int total,value,hashsize,fragment_present = 0;
+			int power = 0;
+			char sequence_from_hashtable_genome[70];
+
+			Node_blast* temp = data_head_BLAST;
+			Node_blast* temp_random = head_BLAST;
+			int counter_random = 0;
+			char dataseq[50];
+			
+			
+			while (temp_random!=NULL)
+			{
+			    
+			    	while (temp!=NULL)
+			        {
+			            for(int l = 0; l< 11 ; l++)
+					    {
+					        dataseq[l] = (temp -> dataStructure_LL_genome)[l];
+					       // cout << "***********"<<dataseq[l];
+					    }
+    					 for(int z = 11; z < 50; z++)
+		                {
+		                    temp = temp -> next_BLAST;
+		                    dataseq[z] = (temp -> dataStructure_LL_genome)[0];
+		                    
+		                   
+		                }
+		                cout << "\nRandom sequence index number: " << counter_random << endl;
+					    
+				
+			            SW_algorithm(temp_random -> dataStructure_LL_random, dataseq);
+    			
+				        temp = temp -> next_BLAST;
+				        counter_random++;
+			        }
+			        
+			        
+			        
+				        temp_random = temp_random -> next_BLAST;
+				
+			}
+			
+			
+			
+
+			cout << "Query 11-mer fragments found in genome set: " << fragment_present << endl;
+		}
+		
 		void print_genomic_data_BLAST() //print the genome data linked list
 		{
 
@@ -609,22 +1069,23 @@ class FASTAreadset_BLAST
             cout << "\nDeconstructor Function executed !!!\n" << endl;
         }
 
-		void deleteList_hash(Node_Hash** head_ref) // function to delete entire linked list
+		void deleteList_hash(Node_blast** head_ref) // function to delete entire linked list
         {
  
-            Node_Hash* current = *head_ref;
-            Node_Hash* next_hash = NULL;
+            Node_blast* current = *head_ref;
+            Node_blast* next_BLAST = NULL;
  
             while (current != NULL) 
             {
-                next_hash = current->next_hash;
+                next_BLAST = current->next_BLAST;
                 free(current);
-                current = next_hash;
+                current = next_BLAST;
             }
  
             *head_ref = NULL;
 
         }
+        
         void deleteList_BLAST(Node_blast** head_ref) // function to delete entire linked list
         {
  
@@ -646,19 +1107,19 @@ class FASTAreadset_BLAST
 		{
 			for(int i=0;i<usersizeofhashtable;i++)
 			{
-				Node_Hash* current = hash_table[i];
-				Node_Hash* temp = new Node_Hash();
+				Node_blast* current = hash_table[i];
+				Node_blast* temp = new Node_blast();
 				
 				while (current != NULL)
 				{
 					temp = current;
 					free(temp);
-					current = current->next_hash;
+					current = current->next_BLAST;
 				}
 
 				hash_table[i]= NULL;
 			}
-			cout << "Hash Table deleted successfully !!! "<< endl;
+// 			cout << "Hash Table deleted successfully !!! "<< endl;
 
 		}
    
@@ -666,8 +1127,8 @@ class FASTAreadset_BLAST
             {
                 deleteList_BLAST(&head_BLAST);
 				deleteList_BLAST(&data_head_BLAST);
-				deleteList_hash(&head_hash);
-				deleteList_hash(&data_head_hash);
+				// deleteList_hash(&head_hash);
+				// deleteList_hash(&data_head_hash);
 
 
 

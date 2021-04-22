@@ -47,9 +47,9 @@ class FASTAreadset_DA
 		Node* data_head; // to create new node for temporary purpose
 
 		int index; //to store max value of Dij matrix
-		double GAP_penalty=-3;
-		double match = 2;
-		double mismatch = -1;
+		int GAP_penalty=-3;
+		int match = 2;
+		int mismatch = -1;
 
     public:
         
@@ -96,7 +96,6 @@ class FASTAreadset_DA
 			cout << "Number Of Read Query Lines (reads): " << counter << endl;
 
 			Node * current_ll = new Node;	//temporary node
-			char temp_input[50]; //temp variable	
 			
 			for(int i=0; i<counter/2; i++)
 			{
@@ -283,6 +282,7 @@ class FASTAreadset_DA
 
 		double similarity_score_matrix(char a, char b)
 		{
+		     
 			double result;
 			if(a==b)
 			{
@@ -346,19 +346,25 @@ class FASTAreadset_DA
 						for(int j=0;j<=length_of_sequence_B;j++)
 						{
 							matrix[i][j]=0;
+				// 			cout << matrix[i][j];
 						}
+				// 		cout << endl;
 					}
+					
 
 					double traceback_array[4];
 					int I_i[length_of_sequence_A+1][length_of_sequence_B+1];
 					int I_j[length_of_sequence_A+1][length_of_sequence_B+1];
 
 
+                    
 					for (int i=1;i<=length_of_sequence_A;i++)
 					{
 						for(int j=0;j<=length_of_sequence_B;j++)
 						{
-							traceback_array[0] = matrix[i-1][j-1]+similarity_score_matrix(sequence_A[i-1],sequence_B[j-1]);
+						   
+							traceback_array[0] = matrix[i-1][j-1] + similarity_score_matrix(sequence_A[i-1],sequence_B[j]);
+				// 			cout << "hello" << endl;
 							traceback_array[1] = matrix[i-1][j]+GAP_penalty;
 							traceback_array[2] = matrix[i][j-1]+GAP_penalty;
 							traceback_array[3] = 0;
@@ -385,6 +391,7 @@ class FASTAreadset_DA
 								I_i[i][j] = i;
 								I_j[i][j] = j;
 							}
+							
 						}
 					}
 					cout<<endl;
