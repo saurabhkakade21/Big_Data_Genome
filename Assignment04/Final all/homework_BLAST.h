@@ -1,7 +1,6 @@
 //Name: Saurabh Jawahar Kakade sk2354@nau.edu
-//Assignment 03
+//Assignment 04
 //Large Scale Data Structures
-
 
 #ifndef FASTA_BLAST_H
 #define FASTA_BLAST_H
@@ -11,7 +10,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cstring>
-
 #include <math.h>
 #include "homework.h"
 
@@ -21,7 +19,7 @@ struct Node_blast
 {
     char dataStructure_LL[11];	//to store data
     char headercounter_LL[7];	//to store read head
-    char dataStructure_LL_random[50];
+    char dataStructure_LL_random[50]; // to store randomly generated query
 	char dataStructure_LL_genome[11];	//to store genome data
 	char headercounter_LL_genome[40];	//to store genome head
 	char *hash_dataStructure;		//to store data
@@ -29,15 +27,6 @@ struct Node_blast
 	struct Node_blast *next_BLAST;
 };
      
-
-//structure node_hash function for linked list
-// struct Node_Hash 
-// {
-//     char *hash_dataStructure;		//to store data
-//     unsigned int header_Hash;			//to store read head
-// 	struct Node_Hash *next_hash;
-// };
-
 //main class 
 class FASTAreadset_BLAST
 {
@@ -49,6 +38,7 @@ class FASTAreadset_BLAST
 		char head_array_genome[38]; //to store head of genome
 		char ** queries_stack;
 
+		//temporary variables
 		unsigned int total = 0;
 		unsigned int power = 0;
 		unsigned int value_BLAST = 0;
@@ -59,12 +49,13 @@ class FASTAreadset_BLAST
 		unsigned int total_BLAST = 0;
 		unsigned int collisions = 0;
 		int usersizeofhashtable; //to read the number of reads from user
+
 		int index; //to store max value of Dij matrix
-		double GAP_penalty=-3;
-		double match = 2;
-		double mismatch = -1;
-		// bool bool_array[4294967295];
-		bool bool_array[4200000]; //size of hash table 4194271
+		double GAP_penalty=-3; //penalty
+		double match = 2; //match
+		double mismatch = -1; //mismatch
+
+		bool bool_array[4200000]; //max size of hash table 4194271
 
         string file_path_BLAST; // to store file name
         string file_path_BLAST_02; // to store file name
@@ -74,7 +65,6 @@ class FASTAreadset_BLAST
         Node_blast* head_BLAST; // to create new node head
 		Node_blast* data_head_BLAST; // to create new node for temporary purpose
 
-// 		bool bool_array_BLAST[2];
 		char query_stack_array[40][11];
 
     public:
@@ -91,7 +81,6 @@ class FASTAreadset_BLAST
         FASTAreadset_BLAST(string filepath)  //default constructor
         {
             file_path_BLAST = filepath;
-			// usersizeofhashtable = user_sizeofhashtable;
 
             if(input_BLAST.is_open()) //check whether file is open already
 			{
@@ -99,8 +88,6 @@ class FASTAreadset_BLAST
 			}
 
 			input_BLAST.open(file_path_BLAST.c_str()); 
-
-		
 			head_BLAST = NULL;
 			data_head_BLAST = NULL;
 
@@ -140,11 +127,8 @@ class FASTAreadset_BLAST
 		void SW_algorithm(string query, string genome) //Smith Waterman Algorithm
 		{
 
-			string sequence_A; // sequence A
-			string sequence_B; // sequence B
-			
-// 			cout << "....." << genome << endl;
-			
+				string sequence_A; // sequence A
+				string sequence_B; // sequence B
 		
 				sequence_A = query;
 
@@ -164,25 +148,19 @@ class FASTAreadset_BLAST
 						for(int j=0;j<=length_of_sequence_B;j++)
 						{
 							matrix[i][j]=0;
-				// 			cout << matrix[i][j];
 						}
-				// 		cout << endl;
 					}
-					
 
 					double traceback_array[4];
 					int I_i[length_of_sequence_A+1][length_of_sequence_B+1];
 					int I_j[length_of_sequence_A+1][length_of_sequence_B+1];
 
-
-                    
 					for (int i=1;i<=length_of_sequence_A;i++)
 					{
 						for(int j=0;j<=length_of_sequence_B;j++)
 						{
 						   
 							traceback_array[0] = matrix[i-1][j-1] + similarity_score_matrix(sequence_A[i-1],sequence_B[j]);
-				// 			cout << "hello" << endl;
 							traceback_array[1] = matrix[i-1][j]+GAP_penalty;
 							traceback_array[2] = matrix[i][j-1]+GAP_penalty;
 							traceback_array[3] = 0;
@@ -212,7 +190,6 @@ class FASTAreadset_BLAST
 							
 						}
 					}
-					cout<<endl;
 					// cout << "Print the scoring matrix to console: \n" << endl;
 
 					// print the scoring matrix to console
@@ -246,12 +223,9 @@ class FASTAreadset_BLAST
 					// traceback_array
 					
 					int current_i=i_max,current_j=j_max; 
-
 					int next_i = I_i[current_i][current_j];
 					int next_j = I_j[current_i][current_j];
-
 					int tick=0;
-
 					char consensus_a[length_of_sequence_A + length_of_sequence_B + 2];
 					char consensus_b[length_of_sequence_A + length_of_sequence_B + 2];
 
@@ -314,18 +288,16 @@ class FASTAreadset_BLAST
 					cout << "\n****************************************************" <<endl;
 					
 				
-				
 // 			return matrix_max;	
 			
 		}
 		
-		int size_of_table_BLAST() //to count the size of the read dataset file
+		int size_of_table_BLAST() //to count the size of the query dataset file
 		{
 			string input_line_BLAST;
 			int counter1_BLAST = 0;
 			ifstream input_BLAST;
 			input_BLAST.open(file_path_BLAST.c_str()); 
-
 					
 			while(getline(input_BLAST,input_line_BLAST))
 			{
@@ -335,7 +307,7 @@ class FASTAreadset_BLAST
 			return counter1_BLAST;
 		}
 
-        void read_queries_11mers() // function to read number of reads from file	
+        void read_queries_11mers() // function to read number of 11mers from query file	
         {
 			
 			int counter_BLAST = size_of_table_BLAST();
@@ -379,9 +351,6 @@ class FASTAreadset_BLAST
 						Node_blast * new_node_blast = new Node_blast;
 
 						query_seed = data_array_BLAST[i][j];	
-						// query_stack_array[m][j] = data_array_BLAST[i][j];
-						// cout << query_seed;
-										
 						
 			  				if(query_seed == 'A' || query_seed == 'C' || query_seed == 'G' || query_seed == 'T')
 							{
@@ -396,14 +365,8 @@ class FASTAreadset_BLAST
 									for (int k = 0; k < 11; k++)
 									{
 										(new_node_blast->dataStructure_LL)[k] = temp[k];
-										// cout << temp[k];
 									}
-									// cout << endl;
-								// 	for (int k = 0; k < 11; k++)
-								// 	{
-								// 		// cout << query_stack_array[m][k];
-										
-								// 	}
+									
 									new_node_blast->next_BLAST = NULL;
 
 									if(current_ll_blast != NULL)
@@ -418,22 +381,15 @@ class FASTAreadset_BLAST
 										head_BLAST = new_node_blast;
 									}
 									LL_counter_to_header++;
-									// cout << endl;
 									count = 0;
 									
 								}
 								
 							}
-
 					}
-					// count = 0;
-					// cout << query_stack_array[m];
 					
-					// cout << endl;
 				}
-				// cout << endl;
-				// query_stack_array = delete[];
-
+				
         	}
         }
 
@@ -469,8 +425,6 @@ class FASTAreadset_BLAST
 					
 						//A==0, C==1, G==2, T==3 values for radix calculations
 
-						// cout << (current -> dataStructure_LL_genome)[0] << endl;
-
 						if((current -> dataStructure_LL_genome)[j]=='A')
 						{
 							value = 0;
@@ -497,9 +451,6 @@ class FASTAreadset_BLAST
 
 					}
 					
-				// 	cout << current -> dataStructure_LL_genome << endl;
-				// 	cout << demo_counter << endl;
-                    // demo_counter++;    
 
 					current = current -> next_BLAST;
 
@@ -511,15 +462,12 @@ class FASTAreadset_BLAST
 					else
 					{
 						hashtablesize = total;
-				// 		cout << hashtablesize << endl;
 					}
-
 
 
 					if(bool_array[total]==true)
 					{
 						collisions++;
-						// cout << "hello" << endl;
 
 					}
 					else
@@ -529,9 +477,6 @@ class FASTAreadset_BLAST
 					}
 
 			}
-
-			
-					
 			
 			int unique_seq = 0;
 
@@ -566,7 +511,7 @@ class FASTAreadset_BLAST
 			return counter1_BLAST;
 		}
 
-	   	void read_genome_11mers(string filepath2)	
+	   	void read_genome_11mers(string filepath2)	//seeds from genome data
 		{
 			string input2_line2_BLAST;
 			ifstream input2_BLAST;
@@ -583,13 +528,7 @@ class FASTAreadset_BLAST
 
 			input2_BLAST.open(filepath2.c_str()); // initialize th file
 
-			// char genome_character_BLAST = '\0';
-
-			// while(genome_character_BLAST != '\n')
-			// {
-			// 	input2_BLAST.get(genome_character_BLAST);	//avoid first line from file
-			// }
-
+			
 			for (int i = 0; i < counter_BLAST-1; ++i)
 			{
 				data_array_genome[i] = new char[70];
@@ -624,9 +563,6 @@ class FASTAreadset_BLAST
 						Node_blast * new_node_blast = new Node_blast;
 
 						query_seed = data_array_genome[i][j];	
-						// query_stack_array[m][j] = data_array_BLAST[i][j];
-						// cout << query_seed;
-										
 						
 			  				if(query_seed == 'A' || query_seed == 'C' || query_seed == 'G' || query_seed == 'T')
 							{
@@ -641,14 +577,7 @@ class FASTAreadset_BLAST
 									for (int k = 0; k < 11; k++)
 									{
 										(new_node_blast->dataStructure_LL_genome)[k] = temp[k];
-										// cout << temp[k];
 									}
-									// cout << endl;
-								// 	for (int k = 0; k < 11; k++)
-								// 	{
-								// 		// cout << query_stack_array[m][k];
-										
-								// 	}
 									new_node_blast->next_BLAST = NULL;
 
 									if(current_ll_blast != NULL)
@@ -663,7 +592,6 @@ class FASTAreadset_BLAST
 										data_head_BLAST = new_node_blast;
 									}
 									LL_counter_to_header++;
-									// cout << endl;
 									count = 0;
 									
 								}
@@ -671,22 +599,11 @@ class FASTAreadset_BLAST
 							}
 
 					}
-					// count = 0;
-					// cout << query_stack_array[m];
 					
-					// cout << endl;
 				}
-				// cout << endl;
-				// query_stack_array = delete[];
 
         	}
 
-
-
-
-
-			// while (input2_BLAST.get(genome_character_BLAST))
-			// {
 			input2_BLAST.close();
 		}
 		
@@ -709,14 +626,11 @@ class FASTAreadset_BLAST
 		
 				total = 0;
 				power = 1;
-				// 	cout << (current -> dataStructure_LL_genome) << endl;
 
 					for (int j = 0; j < 11; j++)
 					{
 					
 						//A==0, C==1, G==2, T==3 values for radix calculations
-
-				// 		cout << (current -> dataStructure_LL_genome)[0] << endl;
 
 						if((current -> dataStructure_LL_genome)[j]=='A')
 						{
@@ -743,13 +657,7 @@ class FASTAreadset_BLAST
 						power = power * 4;
 
 					}
-					
-				// 	cout << total << endl;
-					
-					
-					
-				// total = total % hashtablevalue_return;
-				
+									
 				Node_blast *current02 = hash_table[total];
 				
              	Node_blast *temp_chain = NULL;
@@ -757,7 +665,6 @@ class FASTAreadset_BLAST
 				while (current02 != NULL)
 				{
 					temp_chain = current02;
-				// 	cout << temp_chain;
 					current02 = current02->next_BLAST;
 				}
 
@@ -767,15 +674,11 @@ class FASTAreadset_BLAST
 					current02->header_Hash = total;
 					current02->hash_dataStructure = new char[11];
 					
-				// 	cout << "hello" << endl;
-
 					for(int k = 0 ; k < 11 ; k++)
 					{
 						current02->hash_dataStructure[k] = (current -> dataStructure_LL_genome)[k];
 						
-				// 		cout << current->dataStructure_LL_genome[k];
 					}
-				// 	cout << endl;
 
 					if (temp_chain == NULL)
 					{
@@ -795,19 +698,9 @@ class FASTAreadset_BLAST
 	                	(current02->hash_dataStructure)[m] = current -> dataStructure_LL_genome[m];
 					}
 				}
-				// cout << current02->hash_dataStructure << endl;
+
 				current = current -> next_BLAST;
 			}
-			
-// 			for(int i = 0 ; i < hashtablevalue_return ;i++)
-// 			{
-// 			    if(hash_table[i] != 0)
-// 			    {
-// 			        cout << hash_table[i] <<endl;
-// 			    }
-				
-//  			}
-			
 			
 		}
 		
@@ -875,22 +768,15 @@ class FASTAreadset_BLAST
 					fragment_present++;
 					
 					Node_blast* current02 = hash_table[total];
-				// 	dataseq[50];
-					
-				// 	Node_blast* temp02 = data_head;
-					
 					char dataseq[50];
 					int counter = 0;
 					int val = 1;
-				while(current02 != NULL)
+					while(current02 != NULL)
 					{
 
     					if(strcmp(temp -> dataStructure_LL, current02 -> hash_dataStructure)==0)
     					{
-    					   // cout << temp -> dataStructure_LL << "....."<< current02 -> hash_dataStructure <<endl;
-
     					   
-    					   // cout << endl;
     					    Node_blast* current03 = data_head_BLAST;
 
     					    while(current03 != NULL)
@@ -898,14 +784,9 @@ class FASTAreadset_BLAST
     					        if(strcmp(temp -> dataStructure_LL, current03 -> dataStructure_LL_genome)==0)
     					        {
 
-    					           // for(int t = 0; t < (50-11);t++)
-    					           // {
-    					                
-    					                
     					                for(int l = 0; l< 11 ; l++)
                 					    {
                 					        dataseq[l] = (temp -> dataStructure_LL)[l];
-                					       // cout << "***********"<<dataseq[l];
                 					    }
                 					    
     					                for(int z = 11; z < 50; z++)
@@ -916,39 +797,20 @@ class FASTAreadset_BLAST
     					                        dataseq[z] = (current03 -> dataStructure_LL_genome)[0];
     					                    } 
 
-    					                   // cout << dataseq[z];
     					                }
-    					               // cout << endl;
-    					               // cout << temp -> dataStructure_LL << "..." << dataseq << endl;
     					                
     					            }
     					          
-
-    					       // }
     					        current03 = current03 -> next_BLAST;
     					    }
 
-    					   
-
-
-
-
-
     					}   
-    				// 	cout << "....."<< current02 -> hash_dataStructure << endl;
-    				
-    				//  cout << temp -> dataStructure_LL << "..." << dataseq << endl;
-    				 SW_algorithm(temp -> dataStructure_LL, dataseq);
+    				SW_algorithm(temp -> dataStructure_LL, dataseq);
     					    
-    					   // string a1 = temp -> dataStructure_LL;
-    					   // string a2 = dataseq;
-    					   // SW_algorithm(a1,a2);
-
-    					current02 = current02->next_BLAST;
+					current02 = current02->next_BLAST;
 
 
 					}
-				// 	 SW_algorithm(temp -> dataStructure_LL, dataseq);
 
 				}
 				else
@@ -959,10 +821,6 @@ class FASTAreadset_BLAST
 				
 			}
 			
-			
-			
-
-			cout << "Query 11-mer fragments found in genome set: " << fragment_present << endl;
 		}
 		
 		void random_seq_generator(int user_defined_values) // random sequence generator as per the user size of total queries.
@@ -999,8 +857,6 @@ class FASTAreadset_BLAST
 
 				}
 				
-				// cout << new_node->dataStructure_LL_random << endl;
-
 				new_node->next_BLAST = NULL;
 
 				if(current_ll != NULL)
@@ -1040,7 +896,6 @@ class FASTAreadset_BLAST
 			            for(int l = 0; l< 11 ; l++)
 					    {
 					        dataseq[l] = (temp -> dataStructure_LL_genome)[l];
-					       // cout << "***********"<<dataseq[l];
 					    }
     					 for(int z = 11; z < 50; z++)
 		                {
@@ -1049,8 +904,6 @@ class FASTAreadset_BLAST
 		                    
 		                   
 		                }
-		              //  cout << "\nRandom sequence index number: " << counter_random << endl;
-					    
 				
 			            SW_algorithm(temp_random -> dataStructure_LL_random, dataseq);
     			
@@ -1058,15 +911,10 @@ class FASTAreadset_BLAST
 				        counter_random++;
 			        }
 			        
-			        
-			        
-				        temp_random = temp_random -> next_BLAST;
+			        temp_random = temp_random -> next_BLAST;
 				
 			}
 			
-			
-			
-
 			cout << "Query 11-mer fragments found in genome set: " << fragment_present << endl;
 		}
 		
@@ -1137,7 +985,6 @@ class FASTAreadset_BLAST
 
 				hash_table[i]= NULL;
 			}
-// 			cout << "Hash Table deleted successfully !!! "<< endl;
 
 		}
    
@@ -1145,13 +992,9 @@ class FASTAreadset_BLAST
             {
                 deleteList_BLAST(&head_BLAST);
 				deleteList_BLAST(&data_head_BLAST);
-				// deleteList_hash(&head_hash);
-				// deleteList_hash(&data_head_hash);
-
-
-
 				delete_hash_table();
-				// delete[] query_stack_array;
+				delete[] data_array_BLAST;
+				delete[] data_array_genome;
 			}       
 };
 

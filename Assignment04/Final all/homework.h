@@ -1,5 +1,5 @@
 //Name: Saurabh Jawahar Kakade sk2354@nau.edu
-//Assignment 03
+//Assignment 04
 //Large Scale Data Structures
 
 #ifndef FASTA_H
@@ -47,9 +47,9 @@ class FASTAreadset_DA
 		Node* data_head; // to create new node for temporary purpose
 
 		int index; //to store max value of Dij matrix
-		int GAP_penalty=-3;
-		int match = 2;
-		int mismatch = -1;
+		int GAP_penalty=-3; //penalty
+		int match = 2; //match
+		int mismatch = -1; //mismatch
 
     public:
         
@@ -89,10 +89,11 @@ class FASTAreadset_DA
 			return counter1;
 		}
 
-        void read_queries() // function to read number of reads from file	
+        void read_queries() // function to read number of queries from file	
         {
 			
 			int counter = size_of_table(file_path);
+
 			cout << "Number Of Read Query Lines (reads): " << counter << endl;
 
 			Node * current_ll = new Node;	//temporary node
@@ -212,7 +213,7 @@ class FASTAreadset_DA
 				}  
 			}         
 
-			cout << "\nTotal 70-character fragments: " << num_of_records << endl;
+			cout << "\nTotal Genome-character fragments: " << num_of_records << endl;
 			input2.close();
 		}
 	   
@@ -280,7 +281,7 @@ class FASTAreadset_DA
 			}
 		}
 
-		double similarity_score_matrix(char a, char b)
+		double similarity_score_matrix(char a, char b) //Similarity matrix
 		{
 		     
 			double result;
@@ -295,7 +296,7 @@ class FASTAreadset_DA
 			return result;
 		}
 
-		double find_max_Dij(double array[], int length)
+		double find_max_Dij(double array[], int length) // to find maximum from Dij matrix
 		{
 			double max = array[0];
 			index = 0;
@@ -346,9 +347,7 @@ class FASTAreadset_DA
 						for(int j=0;j<=length_of_sequence_B;j++)
 						{
 							matrix[i][j]=0;
-				// 			cout << matrix[i][j];
 						}
-				// 		cout << endl;
 					}
 					
 
@@ -364,13 +363,11 @@ class FASTAreadset_DA
 						{
 						   
 							traceback_array[0] = matrix[i-1][j-1] + similarity_score_matrix(sequence_A[i-1],sequence_B[j]);
-				// 			cout << "hello" << endl;
 							traceback_array[1] = matrix[i-1][j]+GAP_penalty;
 							traceback_array[2] = matrix[i][j-1]+GAP_penalty;
 							traceback_array[3] = 0;
 							matrix[i][j] = find_max_Dij(traceback_array,4);
 							
-							//value of index changes from find_max_Dij function
 							if(index==0)
 							{							
 								I_i[i][j] = i-1;
